@@ -10,7 +10,7 @@ public:
     MainComponent()
     {
         auto jml = JML::getInstance();
-        jml->setJMLFile(File("C:\\Users\\james\\Desktop\\sample.jml"));
+        jml->setJMLFile(File::getCurrentWorkingDirectory().getChildFile("..\\..\\..\\samples\\sample.jml"));
 
         addAndMakeVisible(button1);
         button1.setButtonText("One");
@@ -36,7 +36,7 @@ public:
 
     void resized() override
     {
-        JML::getInstance()->perform();
+        JML::getInstanceWithoutCreating()->perform();
     }
 
 

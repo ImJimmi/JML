@@ -1,3 +1,8 @@
+# Directories
+Builds/
+JuceLibraryCode/
+
+#===============================================================================
 # Prerequisites
 *.d
 

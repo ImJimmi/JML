@@ -1,0 +1,7 @@
+<jml>
+  <grid template-rows="1fr 2fr" template-columns="1fr 2fr" template-areas="'a b' 'c d'"
+        gap="10" margin="10" justify-content="center" align-items="center">
+    <button1 grid-area="a" width="50" height="50"/>
+    <button2 grid-area="d"/>
+  </grid>
+</jml>

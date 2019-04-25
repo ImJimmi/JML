@@ -27,10 +27,10 @@ class JML
 public:
     //==========================================================================
     JML();
-    ~JML();
 
     //==========================================================================
     void setJMLFile(const File& file);
+    void setJMLRoot(std::unique_ptr<XmlElement> root);
 
     //==========================================================================
     void setComponentForTag(const String& tag, Component* component);
@@ -38,25 +38,45 @@ public:
     //==========================================================================
     void perform();
 
-    //==========================================================================
-    JUCE_DECLARE_SINGLETON(JML, true)
-
 private:
     //==========================================================================
-    void performLayout(XmlElement* element);
+    void performLayoutForElement(XmlElement* element);
 
-    void performGridLayout(XmlElement* element);
     void layoutComponent(XmlElement* element);
+    void performGridLayout(XmlElement* element, XmlElement* parent);
 
     //==========================================================================
     const int getAttributeValue(const String& name, const String& value,
                                 Component* component);
 
+    Component* getComponentForElement(XmlElement* element);
+
     //==========================================================================
     std::unique_ptr<XmlElement> jmlRoot;
-    NamedValueSet tagList;
+    std::unordered_map<String, uintptr_t> tagsMap;
 
-    std::unordered_map<String, std::function<void(const int, Rectangle<int>&)>> boundsMaps;
-    std::unordered_map<String, std::function<void(const int, BorderSize<int>&)>> marginMaps;
-    std::unordered_map<String, std::function<void(const int, Grid&)>> gridMaps;
+    // component maps
+    struct ComponentDefinition
+    {
+        Component* component;
+        Rectangle<int> bounds;
+        Rectangle<int> minBounds;
+        Rectangle<int> maxBounds;
+        BorderSize<int> margin;
+    };
+
+    std::unordered_map<String, std::function<void(const String&, ComponentDefinition&)>> componentMap;
+
+    // grid maps
+    std::unordered_map<String, std::function<void(const String&, Grid&)>> gridMap;
+    std::unordered_map<String, Grid::JustifyItems> gridJustifyItemsMap;
+    std::unordered_map<String, Grid::AlignItems> gridAlignItemsMap;
+    std::unordered_map<String, Grid::JustifyContent> gridJustifyContentMap;
+    std::unordered_map<String, Grid::AlignContent> gridAlignContentMap;
+    std::unordered_map<String, Grid::AutoFlow> gridAutoFlowMap;
+
+    std::unordered_map<String, std::function<void(const String&, GridItem&)>> gridItemMap;
+    std::unordered_map<String, GridItem::JustifySelf> gridItemJustifySelfMap;
+    std::unordered_map<String, GridItem::AlignSelf> gridItemAlignSelfMap;
+
 };

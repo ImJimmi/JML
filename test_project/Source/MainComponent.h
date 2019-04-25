@@ -9,24 +9,23 @@ public:
     //==========================================================================
     MainComponent()
     {
-        auto jml = JML::getInstance();
-        jml->setJMLFile(File::getCurrentWorkingDirectory().getChildFile("..\\..\\..\\samples\\sample.jml"));
+        jml.setJMLFile(File::getCurrentWorkingDirectory().getChildFile("..\\..\\..\\samples\\sample.jml"));
+        jml.setComponentForTag("mainComponent", this);
 
-        addAndMakeVisible(button1);
-        button1.setButtonText("One");
-        jml->setComponentForTag("button1", &button1);
+        for (int i = 0; i < 7; i++)
+        {
+            auto name = "button" + String(i);
+            auto button = buttons.add(new TextButton(name));
 
-        addAndMakeVisible(button2);
-        button2.setButtonText("Two");
-        jml->setComponentForTag("button2", &button2);
+            addAndMakeVisible(button);
+            jml.setComponentForTag(name, button);
+        }
 
-        setName("MainComponent");
         setSize(400, 300);
     }
 
     ~MainComponent()
     {
-        JML::deleteInstance();
     }
 
     //==========================================================================
@@ -36,14 +35,15 @@ public:
 
     void resized() override
     {
-        JML::getInstanceWithoutCreating()->perform();
+        jml.perform();
     }
 
 
 private:
     //==========================================================================
-    TextButton button1;
-    TextButton button2;
+    JML jml;
+
+    OwnedArray<TextButton> buttons;
 
     //==========================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

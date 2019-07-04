@@ -10,18 +10,20 @@ public:
     MainComponent()
     {
         jml.setJMLFile(File::getCurrentWorkingDirectory().getChildFile("..\\..\\..\\samples\\sample.jml"));
-        jml.setComponentForTag("mainComponent", this);
+        jml.setComponentForTag("jml", this);
 
-        for (int i = 0; i < 7; i++)
+        for (int i = 0; i < 5; i++)
         {
-            auto name = "button" + String(i);
+            auto name = "Button " + String(i + 1);
             auto button = buttons.add(new TextButton(name));
 
             addAndMakeVisible(button);
-            jml.setComponentForTag(name, button);
+            jml.setComponentForTag("button" + String(i), (Component*)button);
         }
 
-        setSize(400, 300);
+        jml.watch(10);
+
+        setSize(300, 200);
     }
 
     ~MainComponent()
@@ -35,7 +37,15 @@ public:
 
     void resized() override
     {
-        jml.perform();
+        try
+        {
+            jml.performLayout();
+        }
+        catch (const std::exception& e)
+        {
+            DBG(e.what());
+            jassertfalse;
+        }
     }
 
 

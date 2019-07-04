@@ -3,7 +3,7 @@
 
     ID:               jml
     vendor:           James Johnson
-    version:          1.0.0
+    version:          0.2.0
     name:             JUCE Markup Language
     description:      JML
     dependencies:     juce_core, juce_gui_basics
@@ -14,29 +14,56 @@
 #pragma once
 #define JML_H_INCLUDED
 
+// JUCE includes
 #include <juce_core/juce_core.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
+// STL includes
 #include <unordered_map>
+
+// JML includes
+#include "src/jml_BlockLayoutManager.h"
+#include "src/jml_FlexLayoutManager.h"
+#include "src/jml_GridLayoutManager.h"
 
 using namespace juce;
 
 //==============================================================================
-class JML
+class JML   :   public Timer
 {
 public:
     //==========================================================================
-    JML();
+    JML() {}
+    JML(const File& file);
 
     //==========================================================================
     void setJMLFile(const File& file);
     void setJMLRoot(std::unique_ptr<XmlElement> root);
 
-    //==========================================================================
-    void setComponentForTag(const String& tag, Component* component);
+    /** If called, the JML file will be repeatedly parsed and the layout will be
+        performed with the new XML tree
+    */
+    void watch(const int updatesPerSecond);
 
     //==========================================================================
-    void perform();
+    void timerCallback() override;
+
+    //==========================================================================
+    /** Performs the laying out of the Components. */
+    void performLayout();
+
+    /** Converts an attributes value (as a string) to the correct integer
+        value.
+
+        This allows for the use of relative values like "50%" instead of
+        just fixed values.
+     */
+    static const int attributeStringToInt(Component* component,
+                                          const String& attributeName,
+                                          String attributeValue);
+
+    //==========================================================================
+    void setComponentForTag(const String& tag, Component* component);
 
 private:
     //==========================================================================
@@ -46,14 +73,12 @@ private:
     void performGridLayout(XmlElement* element, XmlElement* parent);
 
     //==========================================================================
-    const int getAttributeValue(const String& name, const String& value,
-                                Component* component);
-
     Component* getComponentForElement(XmlElement* element);
 
     //==========================================================================
+    File jmlFile;
     std::unique_ptr<XmlElement> jmlRoot;
-    std::unordered_map<String, uintptr_t> tagsMap;
+    std::unordered_map<String, Component*> tagsMap;
 
     // component maps
     struct ComponentDefinition

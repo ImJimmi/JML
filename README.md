@@ -17,14 +17,17 @@ This very basic example positions two buttons in the top-left corner of the pare
 
 The corresponding C++ code:
 ```c++
-void resized()
+MyComponent()
 {
     JML jml;
     jml.setJMLFile(File("sample.jml"));
     
     jml.setComponentForTag("button1", &button1);
     jml.setComponentForTag("button2", &button2);
-    
+}
+
+void resized()
+{
     jml.perform();
 }
 ```
@@ -35,20 +38,16 @@ The JML file can be altered without ever having to rewrite or even recompile the
 
 This example uses the grid system to position buttons in a 2x2 grid:
 ```xml
-<jml>
-  <mainComponent>
-    <grid rows="2" columns="2" template-areas="'a b' 'c d'" gap="10" margin="10">
-      <button1 width="100" area="c"/>
-      <button2 row="1 3" column="2"/>
-      <button3 height="25" align-self="center"/>
-    </grid>
-  </mainComponent>
+<jml display="grid" rows="2" columns="2" template-areas="'a b' 'c d'" gap="10" margin="10">
+  <button1 width="100" area="c"/>
+  <button2 row="1 3" column="2"/>
+  <button3 height="25" align-self="center"/>
 </jml>
 ```
 
 And the corresponding C++ code:
 ```c++
-void MainComponent::resized()
+MyComponent()
 {
     JML jml;
     jml.setJMLFile(File("sample.jml"));
@@ -56,7 +55,10 @@ void MainComponent::resized()
 
     for (auto button : buttons)
         jml.setComponentForTag(button->getName(), button);
+}
 
+void resized()
+{
     jml.perform();
 }
 ```

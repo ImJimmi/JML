@@ -1,96 +1,20 @@
-# JML - JUCE Markup Language
+# JML – JUCE Markup Language
+JML is an attempt to create a more intuitive GUI layout system for the [JUCE](https://github.com/WeAreROLI/JUCE) framework.
 
-JML is an attempt to create a markup language for designing GUI's in [JUCE](https://github.com/WeAreROLI/JUCE).
+JML is largely inspired by HTML in its design and implementation. The system uses a set of guidelines for XML documents that are interpreted by the JML JUCE module to position graphical elements within an interface. The defined XML attributes and hierarchy guidelines are designed to make it much easier to write, read, and edit GUI code than the existing methods presented by JUCE.
 
-This repository is structured as a JUCE module so it can be easily implementing into JUCE projects. The JML module interprets an XML file and uses the list of defined tags and attributes to position components within a JUCE project.
+See the [docs](./docs/) folder for some examples of JML code and a full list of supported attributes.
 
-The convention for JML files is the use the `.jml` extension and to start the file with the `<jml>` tag. This is only a convention and isn't actually required - although a root element is required within the chosen file. The syntax for JML files is identical to XML (the module uses JUCE's `XmlElement` class).
+### Usage
+This repository is structured as a JUCE module for easy integration into new or existing projects.
 
-## Examples
-This very basic example positions two buttons in the top-left corner of the parent component:
-```xml
-<jml>
-  <button1 x="10" y="10" width="150" height="50"/>
-  <button2 x="10" y="70" width="150", height="50"/>
-</jml>
-```
+To get the latest version, simply clone this repository: `git clone https://github.com/ImJimmi/JML.git`.
+Then add the JML module to your JUCE project and save the project in the Projucer.
 
-The corresponding C++ code:
-```c++
-MyComponent()
-{
-    JML jml;
-    jml.setJMLFile(File("sample.jml"));
-    
-    jml.setComponentForTag("button1", &button1);
-    jml.setComponentForTag("button2", &button2);
-}
+If you are using git as source control for your JUCE project (which you probably should) then it may be good idea to instead add this repository as a submodule to your own repository: `git submodule add https://github.com/ImJimmi/JML.git`.
 
-void resized()
-{
-    jml.perform();
-}
-```
-
-The JML file can be altered without ever having to rewrite or even recompile the C++ code.
-
----
-
-This example uses the grid system to position buttons in a 2x2 grid:
-```xml
-<jml display="grid" rows="2" columns="2" template-areas="'a b' 'c d'" gap="10" margin="10">
-  <button1 width="100" area="c"/>
-  <button2 row="1 3" column="2"/>
-  <button3 height="25" align-self="center"/>
-</jml>
-```
-
-And the corresponding C++ code:
-```c++
-MyComponent()
-{
-    JML jml;
-    jml.setJMLFile(File("sample.jml"));
-    jml.setComponentForTag("mainComponent", this);
-
-    for (auto button : buttons)
-        jml.setComponentForTag(button->getName(), button);
-}
-
-void resized()
-{
-    jml.perform();
-}
-```
-
-This is equivalent to the following code when not using JML:
-```c++
-void MainComponent::resized()
-{
-    Grid grid;
-    grid.templateRows = { Grid::TrackInfo(1_fr), Grid::TrackInfo(1_fr) };
-    grid.templateColumns = { Grid::TrackInfo(1_fr), Grid::TrackInfo(1_fr) };
-    grid.templateAreas = { "a b", "c d" };
-    grid.setGap(10_px);
-
-    grid.items = { GridItem(buttons[0]).withWidth(100.f).withArea("c"),
-                   GridItem(buttons[1]).withRow({ 1, 3 }).withColumn({ 2 }),
-                   GridItem(buttons[2]).withHeight(25.f).withAlignSelf(GridItem::AlignSelf::center) };
-
-    grid.performLayout(getLocalBounds().reduced(10));
-}
-```
-
-In both cases, this is the result:
-
-![JML grid example](https://i.imgur.com/9fW4oFj.png)
-
-
-## Getting Started
-
-1. Clone this repository: `git clone https://github.com/ImJimmi/JML.git`
-2. Add the JML module to your JUCE project
-3. In your top-most Component class, create a JML object: `JML jml;`
-4. Set the JML file to use using `jml.setJMLFile(File("myJMLFile.jml"));`
-4. Set the Components to use for each tag in the JML file using `jml.setComponentForTag("tagName", &component);`
-5. Call `jml.perform()` in the `resized()` method
+### Planned Features
+* __Grid and FlexBox support__ - Reintroduce support for JUCE's `Grid` and `FlexBox` classes. These layout styles are based on the CSS modules of the same names.
+* __Variables__ - The ability to use predefined variables in values. This would allow for more dynamic layouts where variables can be calculated in C++ code before being passed to the JML interpreter or simply defined at the top of a JML document in a dedicated `<variables/>` element.
+* __In-place Calculations__ - The ability to use basic mathematic functions in values. This would allow for different units to be mixed (for example `50vw + 5%`) as well as finer control over positioning and sizing.
+* __Embedded SVG__ - The ability to embed SVG elements into JML code.

@@ -16,3 +16,4 @@ If you are using git as source control for your JUCE project (which you probably
 ### Planned Features
 * __Grid and FlexBox support__ - Reintroduce support for JUCE's `Grid` and `FlexBox` classes. These layout styles are based on the CSS modules of the same names.
 * __Embedded SVG__ - The ability to embed SVG elements into JML code.
+* __Relative Values__ - The ability to specify values relative to properties of other Components. For example: `x="myButton.centre.x + 10"`.

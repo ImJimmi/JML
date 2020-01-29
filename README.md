@@ -15,6 +15,4 @@ If you are using git as source control for your JUCE project (which you probably
 
 ### Planned Features
 * __Grid and FlexBox support__ - Reintroduce support for JUCE's `Grid` and `FlexBox` classes. These layout styles are based on the CSS modules of the same names.
-* __Variables__ - The ability to use predefined variables in values. This would allow for more dynamic layouts where variables can be calculated in C++ code before being passed to the JML interpreter or simply defined at the top of a JML document in a dedicated `<variables/>` element.
-* __In-place Calculations__ - The ability to use basic mathematic functions in values. This would allow for different units to be mixed (for example `50vw + 5%`) as well as finer control over positioning and sizing.
 * __Embedded SVG__ - The ability to embed SVG elements into JML code.

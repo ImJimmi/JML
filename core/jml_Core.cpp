@@ -20,8 +20,16 @@ JML::JML(const String& jmlString)
 }
 
 //======================================================================================================================
-void JML::performLayout()
+void JML::performLayout(bool reparseFile)
 {
+    if (reparseFile)
+    {
+        jmlRoot = parseXML(jmlFile);
+
+        /** The XML parser failed to parse the provided file! */
+        jassert(jmlRoot);
+    }
+
     topLevelLayout.reset(new jml::ComponentLayoutSpecification);
     performLayoutFor(topLevelLayout.get(), jmlRoot.get());
 }
@@ -41,6 +49,19 @@ void JML::setComponentForTag(const String& tag, Component* component)
     tagsMap[tag] = component;
 }
 
+void JML::setVariable(const String& name, var value)
+{
+    /** Variables can't have empty names! */
+    jassert(name.isNotEmpty());
+
+    variables[name] = value;
+}
+
+var JML::getVariable(const String& name)
+{
+    return variables[name];
+}
+
 //======================================================================================================================
 void JML::performLayoutFor(jml::ComponentLayoutSpecification* layout, XmlElement* element)
 {
@@ -56,9 +77,36 @@ void JML::performLayoutFor(jml::ComponentLayoutSpecification* layout, XmlElement
 
 void JML::buildFor(XmlElement* element, jml::ComponentLayoutSpecification* layout)
 {
+    // handle variables
+    for (int i = 0; i < element->getNumAttributes(); i++)
+    {
+        auto value = element->getAttributeValue(i);
+
+        while (value.contains("{{"))
+        {
+            auto variableString = value.fromFirstOccurrenceOf("{{", true, false).upToFirstOccurrenceOf("}}", true, false);
+            auto variableName = variableString.replace("{{", "").replace("}}", "").trim();
+
+            auto result = variables.find(variableName);
+            if (result != variables.end())
+            {
+                auto variableValue = variables[variableName].toString();
+                value = value.replace(variableString, variableValue);
+            }
+            else
+            {
+                /** The specified variable hasn't been added to the map yet! */
+                jassertfalse;
+            }
+        }
+
+        element->setAttribute(element->getAttributeName(i), value);
+    }
+
     // initialise members
     layout->tagName = element->getTagName();
     layout->component = tagsMap[layout->tagName];
+    layout->isInline = element->getStringAttribute("display", "block").startsWith("inline-");
 
     // setup properties
     layout->properties = ValueTree("properties");

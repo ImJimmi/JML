@@ -4,15 +4,15 @@
 namespace jml
 {
     //==================================================================================================================
+    enum class Flow
+    {
+        Column, // Child components are positioned vertically, top-to-bottom.
+        Row     // Child components are positioned horizontally, left-to-right.
+    };
+
+    //==================================================================================================================
     struct ComponentLayoutSpecification
     {
-        //==============================================================================================================
-        enum class Flow
-        {
-            Column, // Child components are positioned vertically
-            Row     // Child components are positioned horizontally
-        };
-
         //==============================================================================================================
         operator bool() { return component != nullptr; }
 
@@ -24,14 +24,15 @@ namespace jml
         juce::BorderSize<int> padding;
         juce::BorderSize<int> margin;
 
-        bool autoWidth = true;
-        bool autoHeight = true;
         bool autoLeft = true;
         bool autoTop = true;
+        bool autoWidth = true;
+        bool autoHeight = true;
 
         bool autoMarginLeft = false;
 
         Flow flow = Flow::Column;
+        bool isInline = false;
 
         ComponentLayoutSpecification* parent = nullptr;
         int indexAmongSiblings = 0;

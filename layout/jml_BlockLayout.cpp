@@ -17,51 +17,53 @@ namespace jml
                 layout->padding = getBorderSizeFromAttribute(value, layout);
             else
             {
+                const auto pixelValue = (int)std::round(attributeToValue(name, value, layout));
+
                 if (name == "x")
                 {
-                    layout->bounds.setX(getPixelValueFromAttribute(value, layout));
+                    layout->bounds.setX(pixelValue);
                     layout->autoLeft = false;
                 }
                 else if (name == "y")
                 {
-                    layout->bounds.setY(getPixelValueFromAttribute(value, layout, false));
+                    layout->bounds.setY(pixelValue);
                     layout->autoTop = false;
                 }
                 else if (name == "width")
                 {
-                    layout->bounds.setWidth(getPixelValueFromAttribute(value, layout));
+                    layout->bounds.setWidth(pixelValue);
                     layout->autoWidth = false;
                 }
                 else if (name == "height")
                 {
-                    layout->bounds.setHeight(getPixelValueFromAttribute(value, layout, false));
+                    layout->bounds.setHeight(pixelValue);
                     layout->autoHeight = false;
                 }
 
                 else if (name == "min-x")
-                    layout->minBounds.setX(getPixelValueFromAttribute(value, layout));
+                    layout->minBounds.setX(pixelValue);
                 else if (name == "min-y")
-                    layout->minBounds.setY(getPixelValueFromAttribute(value, layout, false));
+                    layout->minBounds.setY(pixelValue);
                 else if (name == "min-width")
-                    layout->minBounds.setWidth(getPixelValueFromAttribute(value, layout));
+                    layout->minBounds.setWidth(pixelValue);
                 else if (name == "min-height")
-                    layout->minBounds.setHeight(getPixelValueFromAttribute(value, layout, false));
+                    layout->minBounds.setHeight(pixelValue);
 
                 else if (name == "max-x")
-                    layout->maxBounds.setX(getPixelValueFromAttribute(value, layout));
+                    layout->maxBounds.setX(pixelValue);
                 else if (name == "max-y")
-                    layout->maxBounds.setY(getPixelValueFromAttribute(value, layout, false));
+                    layout->maxBounds.setY(pixelValue);
                 else if (name == "max-width")
-                    layout->maxBounds.setWidth(getPixelValueFromAttribute(value, layout));
+                    layout->maxBounds.setWidth(pixelValue);
                 else if (name == "max-height")
-                    layout->maxBounds.setHeight(getPixelValueFromAttribute(value, layout, false));
+                    layout->maxBounds.setHeight(pixelValue);
 
                 else if (name == "flow")
                 {
                     if (value == "column")
-                        layout->flow = ComponentLayoutSpecification::Flow::Column;
+                        layout->flow = jml::Flow::Column;
                     else if (value == "row")
-                        layout->flow = ComponentLayoutSpecification::Flow::Row;
+                        layout->flow = jml::Flow::Row;
                 }
             }
         }
@@ -78,10 +80,26 @@ namespace jml
 
             if (auto prevSibling = layout->indexAmongSiblings > 0 ? &layout->parent->children[layout->indexAmongSiblings - 1] : nullptr)
             {
-                if (layout->autoTop && layout->parent->flow == jml::ComponentLayoutSpecification::Flow::Column)
-                    layout->bounds.setY(prevSibling->component->getBottom() + prevSibling->margin.getBottom());
-                else if (layout->autoLeft && layout->parent->flow == jml::ComponentLayoutSpecification::Flow::Row)
-                    layout->bounds.setX(prevSibling->component->getRight() + prevSibling->margin.getLeft());
+                if (layout->isInline && prevSibling->isInline)
+                {
+                    if (layout->parent->flow == jml::Flow::Column)
+                    {
+                        layout->bounds.setY(prevSibling->component->getY() - prevSibling->margin.getTop());
+                        layout->bounds.setX(prevSibling->component->getRight() + prevSibling->margin.getRight());
+                    }
+                    else
+                    {
+                        layout->bounds.setX(prevSibling->component->getX() - prevSibling->margin.getLeft());
+                        layout->bounds.setY(prevSibling->component->getBottom() + prevSibling->margin.getBottom());
+                    }
+                }
+                else
+                {
+                    if (layout->autoTop && layout->parent->flow == jml::Flow::Column)
+                        layout->bounds.setY(prevSibling->component->getBottom() + prevSibling->margin.getBottom());
+                    else if (layout->autoLeft && layout->parent->flow == jml::Flow::Row)
+                        layout->bounds.setX(prevSibling->component->getRight() + prevSibling->margin.getRight());
+                }
             }
 
             // apply margin
@@ -89,7 +107,9 @@ namespace jml
 
             if (layout->autoWidth)
             {
-                if (layout->parent->flow == jml::ComponentLayoutSpecification::Flow::Column)
+                if (layout->isInline)
+                    layout->bounds.setWidth(layout->bounds.getHeight());
+                else if (layout->parent->flow == jml::Flow::Column)
                     layout->bounds.setRight(container.getRight());
                 else
                     layout->bounds.setWidth(60);
@@ -99,7 +119,9 @@ namespace jml
 
             if (layout->autoHeight)
             {
-                if (layout->parent->flow == jml::ComponentLayoutSpecification::Flow::Row)
+                if (layout->isInline)
+                    layout->bounds.setHeight(layout->bounds.getWidth());
+                else if (layout->parent->flow == jml::Flow::Row)
                     layout->bounds.setBottom(container.getBottom());
                 else
                     layout->bounds.setHeight(30);
@@ -138,10 +160,10 @@ namespace jml
                 layout->autoMarginLeft = true;
 
             return BorderSize<int>(
-                jml::getPixelValueFromAttribute(tokens[0], layout, false),   // top
-                jml::getPixelValueFromAttribute(tokens[0], layout),          // left
-                jml::getPixelValueFromAttribute(tokens[0], layout, false),   // bottom
-                jml::getPixelValueFromAttribute(tokens[0], layout)           // right
+                attributeToValue("y", tokens[0], layout),   // top
+                attributeToValue("x", tokens[0], layout),   // left
+                attributeToValue("y", tokens[0], layout),   // bottom
+                attributeToValue("x", tokens[0], layout)    // right
             );
         }
         else if (tokens.size() == 2)
@@ -150,10 +172,10 @@ namespace jml
                 layout->autoMarginLeft == true;
 
             return BorderSize<int>(
-                jml::getPixelValueFromAttribute(tokens[0], layout, false),
-                jml::getPixelValueFromAttribute(tokens[1], layout),
-                jml::getPixelValueFromAttribute(tokens[0], layout, false),
-                jml::getPixelValueFromAttribute(tokens[1], layout)
+                attributeToValue("y", tokens[0], layout),
+                attributeToValue("x", tokens[1], layout),
+                attributeToValue("y", tokens[0], layout),
+                attributeToValue("x", tokens[1], layout)
             );
         }
         else if (tokens.size() == 3)
@@ -162,10 +184,10 @@ namespace jml
                 layout->autoMarginLeft = true;
 
             return BorderSize<int>(
-                jml::getPixelValueFromAttribute(tokens[0], layout, false),
-                jml::getPixelValueFromAttribute(tokens[1], layout),
-                jml::getPixelValueFromAttribute(tokens[2], layout, false),
-                jml::getPixelValueFromAttribute(tokens[1], layout)
+                attributeToValue("y", tokens[0], layout),
+                attributeToValue("x", tokens[1], layout),
+                attributeToValue("y", tokens[2], layout),
+                attributeToValue("x", tokens[1], layout)
             );
         }
         else if (tokens.size() == 4)
@@ -174,10 +196,10 @@ namespace jml
                 layout->autoMarginLeft = true;
 
             return BorderSize<int>(
-                jml::getPixelValueFromAttribute(tokens[0], layout, false),
-                jml::getPixelValueFromAttribute(tokens[3], layout),
-                jml::getPixelValueFromAttribute(tokens[2], layout, false),
-                jml::getPixelValueFromAttribute(tokens[1], layout)
+                attributeToValue("y", tokens[0], layout),
+                attributeToValue("x", tokens[3], layout),
+                attributeToValue("y", tokens[2], layout),
+                attributeToValue("x", tokens[1], layout)
             );
         }
         else

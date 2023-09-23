@@ -1,5 +1,11 @@
 # JML - JUCE Markup Language
 
+## DEPRECATED
+
+Please see [JIVE](https://github.com/ImJimmi/JIVE) for a new and improved decalrative UI framework for JUCE.
+
+---
+
 JML is an attempt to create a markup language for designing GUI's in [JUCE](https://github.com/WeAreROLI/JUCE).
 
 This repository is structured as a JUCE module so it can be easily implementing into JUCE projects. The JML module interprets an XML file and uses the list of defined tags and attributes to position components within a JUCE project.
